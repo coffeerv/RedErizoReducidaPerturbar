@@ -10,6 +10,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+typedef struct perturbation
+{
+   int nodeOfIndex;
+   int rows[];
+}perturbation;
+
 int compareints (const void * a, const void * b);
 int discreteModel (const int i, const int * networkState);
+int discreteModelWithPerturbations (const int i, const int *networkState, const perturbation * perturbationList);
 

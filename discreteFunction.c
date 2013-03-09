@@ -238,3 +238,26 @@ int discreteModel (const int i, const int * st)
 	}
 	return rvalue;
 }
+
+int discreteModelwithPerturbations(const int i, const int *st, const perturbation * perturbationList, const int numPerturbedNodes)
+{
+   int rvalue = 0;
+   int isPerturbed = 0;
+   // Check whether the node should be perturbed or not
+   for(int j = 0; j < numPerturbedNodes; j++)
+   {
+       isPerturbed = (perturbationList[j].nodeIndex == i) ? 1 : 0;
+   }
+   if(!isPertubed)
+   {
+      // compute the values without perturbation
+      rvalue = discreteModel(i,st);
+   } else {
+	// DO peturb the node.
+	int temp = discreteModel(i,st);
+	// is it a binary node?
+	perturbationList
+   }
+   return rvalue;
+}
+
