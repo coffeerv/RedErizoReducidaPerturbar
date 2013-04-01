@@ -1,16 +1,16 @@
 /*
- *  discreteFunction.c
- *  Inversr
+ *  discrete_function.c
  *
  *  Created by Rafael Verduzco on 7/7/11.
  *  Copyright 2011 Universidad Autónoma del Estado de Morelos. All rights reserved.
  *
  */
 
-#include "discreteFunction.h"
+#include "discrete_function.h"
+#include <stdbool.h>
 
 int
-speract [2][2] = {
+speract[2][2] = {
 	{0,	1},
 	{1,	1},
 };
@@ -170,12 +170,12 @@ dK [4][2] = {
 	{4,	1}
 };
 
-int compareints (const void * a, const void * b)
+int compare_ints (const void * a, const void * b)
 {
 	return ( *(int*)a - *(int*)b );
 }
 
-int discreteModel (const int i, const int * st)
+int discrete_model (const int i, const int * st)
 {
 	// 0_sr, 1_cGMP, 2_PDE, 3_v, 4_catsper, 5_HCN, 6_pH, 7_dCa, 8_CaKC, 9_dK
 	int rvalue = 0;
@@ -184,52 +184,52 @@ int discreteModel (const int i, const int * st)
 	switch (i) {
 		case 0: // sr
 			key = st[0];
-			pItem = (int*) bsearch(&key, speract, 2, sizeof (int*), compareints);
+			pItem = (int*) bsearch(&key, speract, 2, sizeof (int*), compare_ints);
 			rvalue = (pItem != NULL) ? *(pItem+1) : -1;
 			break;
 		case 1: // cGMP
 			key = (st[0]*9) + (st[2]*3) + st[1];
-			pItem = (int*) bsearch(&key, cGMP, 8, sizeof (int*), compareints);
+			pItem = (int*) bsearch(&key, cGMP, 8, sizeof (int*), compare_ints);
 			rvalue = (pItem != NULL) ? *(pItem+1) : -1;
 			break;
 		case 2: // PDE
 			key = st[1];
-			pItem = (int*) bsearch(&key, PDE, 2, sizeof (int*), compareints);
+			pItem = (int*) bsearch(&key, PDE, 2, sizeof (int*), compare_ints);
 			rvalue = (pItem != NULL) ? *(pItem+1) : -1;
 			break;
 		case 3: // v
 			key = (st[9]*27) + (st[7]*9) + (st[5]*3) + st[3];
-			pItem = (int*) bsearch(&key, v, 36, sizeof (int*), compareints);
+			pItem = (int*) bsearch(&key, v, 36, sizeof (int*), compare_ints);
 			rvalue = (pItem != NULL) ? *(pItem+1) : -1;
 			break;
 		case 4: // catsper
 			key = (st[3]*9) + (st[6]*3) + st[7];
-			pItem = (int*) bsearch(&key, catsper, 18, sizeof (int*), compareints);
+			pItem = (int*) bsearch(&key, catsper, 18, sizeof (int*), compare_ints);
 			rvalue = (pItem != NULL) ? *(pItem+1) : -1;
 			break;
 		case 5: // HCN
 			key = st[3];
-			pItem = (int*) bsearch(&key, HCN, 3, sizeof (int*), compareints);
+			pItem = (int*) bsearch(&key, HCN, 3, sizeof (int*), compare_ints);
 			rvalue = (pItem != NULL) ? *(pItem+1) : -1;
 			break;
 		case 6: // pH
 			key = st[3];
-			pItem = (int*) bsearch(&key, pH, 3, sizeof (int*), compareints);
+			pItem = (int*) bsearch(&key, pH, 3, sizeof (int*), compare_ints);
 			rvalue = (pItem != NULL) ? *(pItem+1) : -1;
 			break;
 		case 7: // dCa
 			key = (st[0]*27) + (st[3]*9) + (st[4]*3) + st[7];
-			pItem = (int*) bsearch(&key, dCa, 36, sizeof (int*), compareints);
+			pItem = (int*) bsearch(&key, dCa, 36, sizeof (int*), compare_ints);
 			rvalue = (pItem != NULL) ? *(pItem+1) : -1;
 			break;
 		case 8: // CaKC
 			key = (st[7]*3) + st[3];
-			pItem = (int*) bsearch(&key, CaKC, 9, sizeof (int*), compareints);
+			pItem = (int*) bsearch(&key, CaKC, 9, sizeof (int*), compare_ints);
 			rvalue = (pItem != NULL) ? *(pItem+1) : -1;
 			break;
 		case 9: // dK
 			key = (st[1]*3) + st[8];
-			pItem = (int*) bsearch(&key, dK, 4, sizeof (int*), compareints);
+			pItem = (int*) bsearch(&key, dK, 4, sizeof (int*), compare_ints);
 			rvalue = (pItem != NULL) ? *(pItem+1) : -1 ;
 			break;
 		default:
@@ -239,25 +239,51 @@ int discreteModel (const int i, const int * st)
 	return rvalue;
 }
 
-int discreteModelwithPerturbations(const int i, const int *st, const perturbation * perturbationList, const int numPerturbedNodes)
+int discrete_model_perturbed(const int i, const int *st, const int *perturbations, const int num_perturbations)
 {
    int rvalue = 0;
-   int isPerturbed = 0;
+   bool is_perturbed = false;
    // Check whether the node should be perturbed or not
-   for(int j = 0; j < numPerturbedNodes; j++)
+   /*
+   For the time being, this is hardcoded. Probably should receive a vector indicating the
+   strides for the regulatory rows corresponding to each node.
+   e.g. speract_stride = 2, cGMP_stride = 4, etc.
+   */
+   int num_reg_rows = 121; /* This could/should be a parameter */
+   int strides [10] = {2, 8, 2, 36, 18, 3, 3, 36, 9, 4};
+   /* 10 is the number of nodes. Another candidate for a parameter...*/
+
+   /* base and top are the first and last regulatory rows of node i, respectively */
+   int base = 0;
+   int top = 0;
+   for (int j = i; j >= 0; j--)
+       top += strides[j];
+   top--; /* adjusting becuase we're counting from 0 */
+   base = top - strides[i];
+
+   /* Check whether one of the regulatory rows of node i is included in the perturbation list */
+   for (int j = 0; j < num_perturbations; j++)
    {
-       isPerturbed = (perturbationList[j].nodeIndex == i) ? 1 : 0;
+       if((perturbations[j] >= base) && (perturbations[j] <= top))
+       {
+           is_perturbed = true;
+           break; /* The actual row is irrelevant, the node is perturbed. */
+       }
    }
-   if(!isPertubed)
+
+   rvalue = discrete_model(i, st);
+
+   if(is_perturbed) 
    {
-      // compute the values without perturbation
-      rvalue = discreteModel(i,st);
-   } else {
-	// DO peturb the node.
-	int temp = discreteModel(i,st);
-	// is it a binary node?
-	perturbationList
+       if (rvalue == 0) {
+           rvalue = 1;
+       } else if (rvalue == 1) {
+           rvalue = 0;
+       } else if (rvalue == 2) {
+           rvalue = 1;
+       }
    }
+   
    return rvalue;
 }
 

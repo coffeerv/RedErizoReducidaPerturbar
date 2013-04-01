@@ -1,18 +1,18 @@
 
 CC = clang
-FILES = main.c discreteFunction.c networkEvolve.c
-OUT_EXE = robustaCLI
+FILES = main.c discrete_function.c network_evolve.c
+EXEC_TARGET = robusta
 
 debug: $(FILES)
-	$(CC) -o $(OUT_EXE) -g $(FILES)
+	$(CC) -o $(EXEC_TARGET) -g $(FILES)
 
 release: $(FILES)
-	$(CC) -o $(OUT_EXE) -O2s $(FILES)
+	$(CC) -o $(EXEC_TARGET) -O2s $(FILES)
 
 clean:
 	rm -f *.o core
 
 rebuild: clean debug
 
-rebuildRelease: clean release
+rebuild_release: clean release
 
