@@ -1,5 +1,4 @@
 RedErizoReducidaPerturbar
 =========================
 
-Red del erizo perturbada y así
-
+This project will be replaced by a brand new implementation soon.
