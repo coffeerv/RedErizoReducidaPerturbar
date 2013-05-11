@@ -13,6 +13,6 @@ int main(int argc, const char * argv [])
 	FILE * fp = fopen("salida.txt", "w+");
 	discrete_evolution(initial_condition, nodes, max_iterations, transient, names, discrete_model, fp);
 	fclose(fp);
-	printf("\nYa estufas!\n");
+	printf("\n¡Ya estufas, Perico!\n");
     	return EXIT_SUCCESS;
 }
